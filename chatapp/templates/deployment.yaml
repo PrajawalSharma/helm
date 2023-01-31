@@ -1,0 +1,39 @@
+apiVersion: apps/v1           
+kind: Deployment              
+metadata:
+  name: chat-app           
+  labels:                     
+    app: chat-service
+spec:
+  replicas: 3          
+  selector:
+    matchLabels:              
+      app: chat-app
+  template:                   
+    metadata:
+      labels:                 
+        app: chat-app
+    spec:                     
+      containers:
+      - name: chat-app
+        image: containerreg3645.azurecr.io/chatapp:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: http
+            containerPort: 8080 
+---
+
+apiVersion: v1                
+kind: Service                 
+metadata:                     
+  name: chat-service       
+  labels:                     
+    app: chat-service       
+spec:                         
+  type: ClusterIP              
+  selector:
+    app: chat-app      
+  ports:                      
+  - name: http
+    port: 80
+    targetPort: 8080 
