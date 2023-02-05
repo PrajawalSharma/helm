@@ -1,39 +1,54 @@
-apiVersion: apps/v1           
-kind: Deployment              
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: chat-app           
-  labels:                     
-    app: chat-service
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
 spec:
-  replicas: 3          
-  selector:
-    matchLabels:              
-      app: chat-app
-  template:                   
-    metadata:
-      labels:                 
-        app: chat-app
-    spec:                     
-      containers:
-      - name: chat-app
-        image: containerreg3645.azurecr.io/chatapp:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-          - name: http
-            containerPort: 8080 
+  rules:
+    -
+      http:
+        paths:
+          - backend:
+              service:
+               name: chatservice
+               port:
+                 number: 80
+            path: /
+            pathType: Prefix
+            
 ---
 
 apiVersion: v1                
 kind: Service                 
 metadata:                     
-  name: chat-service       
-  labels:                     
-    app: chat-service       
+  name: chatservice             
 spec:                         
   type: ClusterIP              
   selector:
-    app: chat-app      
+    app: chatapp      
   ports:                      
-  - name: http
-    port: 80
+  - port: 80
     targetPort: 8080 
+
+---
+apiVersion: apps/v1           
+kind: Deployment              
+metadata:
+  name: chatapp           
+spec:
+  replicas: 1          
+  selector:
+    matchLabels:              
+      app: chatapp
+  template:                   
+    metadata:
+      labels:                 
+        app: chatapp
+    spec:                     
+      containers:
+      - name: chatapp
+        image: containerreg3645.azurecr.io/chatapp:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8080 
